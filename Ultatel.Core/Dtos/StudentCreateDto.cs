@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ultatel.Core.Enums;
 
 namespace Ultatel.Core.Dtos
 {
@@ -13,5 +14,6 @@ namespace Ultatel.Core.Dtos
         public int Age { get; set; }
         public string Email { get; set; }
         public string Country { get; set; }
+        public GenderValue Gender { get; set; } 
     }
 }

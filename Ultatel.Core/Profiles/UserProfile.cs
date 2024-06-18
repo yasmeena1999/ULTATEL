@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,12 @@ namespace Ultatel.Core.Profiles
             CreateMap<RegisterDto, ApplicationUser>()
                 .ForMember(dest=>dest.UserName,opt=>opt.MapFrom(src=>src.FullName));
             CreateMap<StudentCreateDto, Student>();
+            CreateMap<Student, StudentDto>()
+    .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
+            CreateMap<Student, StudentSearchDto>()
+                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
+                 
+
         }
     }
 }

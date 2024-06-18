@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ultatel.Core.Dtos;
 using Ultatel.Core.Entities;
 using Ultatel.Core.Interfaces;
 using Ultatel.Data.Repositories;
@@ -17,75 +18,34 @@ namespace Ultatel.Services.Services
             _studentRepository = studentRepository;
         }
 
-        public async Task<IEnumerable<Student>> GetStudentsAsync(string userId)
+        public async Task<IEnumerable<Student>> GetAllAsync()
         {
-            return await _studentRepository.GetStudentsAsync(userId);
+            return await _studentRepository.GetAllAsync();
         }
 
-        public async Task<Student> GetStudentByIdAsync(int id, string userId)
+        public async Task<Student> GetByIdAsync(int id)
         {
-            return await _studentRepository.GetStudentByIdAsync(id, userId);
+            return await _studentRepository.GetByIdAsync(id);
         }
 
-        public async Task AddStudentAsync(Student student)
+        public async Task AddAsync(Student student)
         {
-            await _studentRepository.AddStudentAsync(student);
+            await _studentRepository.AddAsync(student);
         }
 
-        public async Task UpdateStudentAsync(Student student)
+        public async Task UpdateAsync(Student student)
         {
-            await _studentRepository.UpdateStudentAsync(student);
+            await _studentRepository.UpdateAsync(student);
         }
 
-        public async Task DeleteStudentAsync(int id, string userId)
+        public async Task DeleteAsync(int id)
         {
-            await _studentRepository.DeleteStudentAsync(id, userId);
+            await _studentRepository.DeleteAsync(id);
+        }
+
+        public async Task<IEnumerable<Student>> SearchAsync(StudentSearchDto searchDto, string userId)
+        {
+            return await _studentRepository.SearchAsync(searchDto, userId);
         }
     }
-} /*   public Student GetStudentById(int studentId, string currentUserId)
-    {
-        return _dbContext.Students
-            .Where(s => s.Id == studentId && s.AddedByUserId == currentUserId)
-            .FirstOrDefault();
-    }
-
-    // Method to add a new student, associating it with the current user
-    public void AddStudent(Student student, string currentUserId)
-    {
-        // Assign the user who added the student
-        student.AddedByUserId = currentUserId;
-
-        // Add student to DbSet and save changes
-        _dbContext.Students.Add(student);
-        _dbContext.SaveChanges();
-    }
-
-    // Method to update a student, ensuring only the user who added it can modify it
-    public void UpdateStudent(Student updatedStudent, string currentUserId)
-    {
-        var existingStudent = _dbContext.Students.Find(updatedStudent.Id);
-
-        // Check if the student exists and if the current user added it
-        if (existingStudent != null && existingStudent.AddedByUserId == currentUserId)
-        {
-            existingStudent.Name = updatedStudent.Name;
-            existingStudent.DateOfBirth = updatedStudent.DateOfBirth;
-
-            _dbContext.SaveChanges();
-        }
-        // Handle unauthorized access or student not found scenarios as needed
-    }
-
-    // Method to delete a student, ensuring only the user who added it can delete it
-    public void DeleteStudent(int studentId, string currentUserId)
-    {
-        var studentToDelete = _dbContext.Students.Find(studentId);
-
-        // Check if the student exists and if the current user added it
-        if (studentToDelete != null && studentToDelete.AddedByUserId == currentUserId)
-        {
-            _dbContext.Students.Remove(studentToDelete);
-            _dbContext.SaveChanges();
-        }
-        // Handle unauthorized access or student not found scenarios as needed
-    } */
+}

@@ -18,7 +18,7 @@ namespace Ultatel.Api.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
 
-        public StudentsController(IStudentService studentService, UserManager<ApplicationUser> userManager,IMapper mapper)
+        public StudentsController(IStudentService studentService, UserManager<ApplicationUser> userManager, IMapper mapper)
         {
             _studentService = studentService;
             _userManager = userManager;
@@ -26,56 +26,77 @@ namespace Ultatel.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetStudents()
+     
+        public async Task<ActionResult<IEnumerable<StudentDto>>> GetStudents()
         {
             var userId = _userManager.GetUserId(User);
-            var students = await _studentService.GetStudentsAsync(userId);
-            return Ok(students);
+            var students = await _studentService.GetAllAsync();
+            var userStudents = students.Where(s => s.AddedByUserId == userId);
+            var studentDtos = _mapper.Map<IEnumerable<StudentDto>>(userStudents);
+            return Ok(studentDtos);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetStudent(int id)
+        public async Task<ActionResult<StudentDto>> GetStudent(int id)
         {
-            var userId = _userManager.GetUserId(User);
-            var student = await _studentService.GetStudentByIdAsync(id, userId);
-            if (student == null)
+            var student = await _studentService.GetByIdAsync(id);
+            if (student == null || student.AddedByUserId != _userManager.GetUserId(User))
             {
                 return NotFound();
             }
-            return Ok(student);
+            var studentDto = _mapper.Map<StudentDto>(student);
+            return Ok(studentDto);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddStudent([FromBody] StudentCreateDto student)
+        public async Task<ActionResult<StudentDto>> PostStudent(StudentDto studentDto)
         {
             var userId = _userManager.GetUserId(User);
-           
-           var StudentCreated= _mapper.Map<Student>(student);
-            StudentCreated.AddedByUserId = userId;
+            var student = _mapper.Map<Student>(studentDto);
+            student.AddedByUserId = userId;
+            student.CreatedAt = DateTime.UtcNow;
+            student.UpdatedAt = DateTime.UtcNow;
 
-            await _studentService.AddStudentAsync(StudentCreated);
-            return Ok(StudentCreated);
+            await _studentService.AddAsync(student);
+            return CreatedAtAction(nameof(GetStudent), new { id = student.Id }, studentDto);
         }
 
-        [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateStudent(int id, Student student)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutStudent(int id, StudentDto studentDto)
         {
-            var userId = _userManager.GetUserId(User);
-            if (id != student.Id || userId != student.AddedByUserId)
+            var student = await _studentService.GetByIdAsync(id);
+            if (student == null || student.AddedByUserId != _userManager.GetUserId(User))
             {
-                return BadRequest();
+                return NotFound();
             }
-            await _studentService.UpdateStudentAsync(student);
+
+            _mapper.Map(studentDto, student);
+            student.UpdatedAt = DateTime.UtcNow;
+
+            await _studentService.UpdateAsync(student);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStudent(int id)
         {
-            var userId = _userManager.GetUserId(User);
-            await _studentService.DeleteStudentAsync(id, userId);
+            var student = await _studentService.GetByIdAsync(id);
+            if (student == null || student.AddedByUserId != _userManager.GetUserId(User))
+            {
+                return NotFound();
+            }
+
+            await _studentService.DeleteAsync(id);
             return NoContent();
         }
-    }
 
+        [HttpPost("search")]
+        public async Task<ActionResult<IEnumerable<StudentDto>>> SearchStudents([FromBody] StudentSearchDto searchDto)
+        {
+            var userId = _userManager.GetUserId(User);
+            var students = await _studentService.SearchAsync(searchDto, userId);
+            var studentDtos = _mapper.Map<IEnumerable<StudentDto>>(students);
+            return Ok(studentDtos);
+        }
+    }
 }
