@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ultatel.Core.Dtos;
 using Ultatel.Core.Entities;
+using Ultatel.Core.Enums;
 using Ultatel.Core.Interfaces;
 using Ultatel.Data.Data;
 
@@ -59,14 +60,22 @@ namespace Ultatel.Data.Repositories
             var query = _context.Students.AsQueryable();
 
             if (!string.IsNullOrEmpty(searchDto.Name))
+            
             {
-                query = query.Where(s => s.FullName.Contains(searchDto.Name) && s.AddedByUserId == userId);
+                string[] nameParts = searchDto.Name.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (nameParts.Length > 0)
+                {
+                    string firstName = nameParts[0];
+                    string lastName = nameParts.Length > 1 ? nameParts[1] : "";
+
+                    query = query.Where(s => (s.FirstName + " " + s.LastName).Contains(searchDto.Name) && s.AddedByUserId == userId);
+                }
             }
             if (!string.IsNullOrEmpty(searchDto.Country))
             {
                 query = query.Where(s => s.Country.Contains(searchDto.Country) && s.AddedByUserId == userId);
             }
-            if (!string.IsNullOrEmpty(searchDto.Gender) && Enum.TryParse<Gender>(searchDto.Gender, out var genderEnum))
+            if (!string.IsNullOrEmpty(searchDto.Gender) && Enum.TryParse<GenderValue>(searchDto.Gender, out var genderEnum))
             {
                 query = query.Where(s => s.Gender == genderEnum && s.AddedByUserId == userId);
             }
@@ -84,30 +93,4 @@ namespace Ultatel.Data.Repositories
     }
 }
 
-        /*   public async Task<IEnumerable<Student>> GetStudentsAsync(string userId, string search, string sort, int page, int pageSize)
-        {
-            var query = _context.Students.Where(s => s.UserId == userId);
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                query = query.Where(s => s.Name.Contains(search) || s.Country.Contains(search));
-            }
-
-            if (sort == "name")
-            {
-                query = query.OrderBy(s => s.Name);
-            }
-            else if (sort == "age")
-            {
-                query = query.OrderBy(s => s.Age);
-            }
-            else if (sort == "country")
-            {
-                query = query.OrderBy(s => s.Country);
-            }
-
-            return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-        }
-
-         */
-    
+        
