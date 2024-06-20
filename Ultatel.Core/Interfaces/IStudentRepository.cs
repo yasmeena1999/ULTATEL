@@ -15,7 +15,7 @@ namespace Ultatel.Core.Interfaces
         Task AddAsync(Student student);
         Task UpdateAsync(Student student);
         Task DeleteAsync(int id);
-        Task<IEnumerable<Student>> SearchAsync(StudentSearchDto searchDto, string userId);
+        
     }
 }
 

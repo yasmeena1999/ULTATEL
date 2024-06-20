@@ -17,33 +17,36 @@ namespace Ultatel.Services.Services
     {
         private readonly IConfiguration _configuration;
 
+        private readonly SymmetricSecurityKey _symmetricSecurityKey;
         public AuthServicecs(IConfiguration configuration)
         {
             _configuration = configuration;
-            
+            _symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"]!));
+
         }
 
-       
 
-            public  async Task<string> CreatTokenAsync(ApplicationUser user, UserManager<ApplicationUser> userManager)
+
+        public async Task<string> CreatTokenAsync(ApplicationUser user, UserManager<ApplicationUser> userManager)
         {
-            var authClaims = new List<Claim>()
+            var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.FullName),
+            new Claim(ClaimTypes.Email, user.Email)
+        };
+
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                new Claim ("Name",user.FullName),
-                new Claim ("Email",user.Email),
-                new Claim ("UserId",user.Id),
-
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddDays(1),
+                SigningCredentials = new SigningCredentials(_symmetricSecurityKey, SecurityAlgorithms.HmacSha256)
             };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            var token = new JwtSecurityToken(
-                claims: authClaims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds);
-
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return tokenHandler.WriteToken(token);
         }
     }
+
 }

@@ -15,13 +15,12 @@ namespace Ultatel.Core.Profiles
         public UserProfile()
         {
             CreateMap<RegisterDto, ApplicationUser>()
-                .ForMember(dest=>dest.UserName,opt=>opt.MapFrom(src=>src.FullName));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.FullName));
             CreateMap<StudentCreateDto, Student>();
-            CreateMap<Student, StudentDto>()
-    .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
+            CreateMap<Student, StudentDto>().ReverseMap();
             CreateMap<Student, StudentSearchDto>()
                  .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
-                 
+
 
         }
     }

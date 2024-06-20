@@ -13,5 +13,6 @@ namespace Ultatel.Core.Dtos
         public string Country { get; set; }
         public GenderValue Gender { get; set; }
         public int Age { get; set; }
+        public string Email { get; set; }
     }
 }

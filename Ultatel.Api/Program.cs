@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System;
+using System.Security.Claims;
 using System.Text;
 using Ultatel.Core.Entities;
 using Ultatel.Core.Interfaces;
@@ -33,6 +35,7 @@ namespace Ultatel.Api
             //Identity
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
+                options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireNonAlphanumeric = true;
@@ -43,10 +46,12 @@ namespace Ultatel.Api
                 options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ";
 
 
+
             })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddSignInManager()
                 .AddRoles<IdentityRole>();
+
 
             // JWT 
             builder.Services.AddAuthentication(options =>
@@ -64,7 +69,26 @@ namespace Ultatel.Api
 
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
                 };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        // Extract UserId from claims and set it to HttpContext.User
+                        var userId = context.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                        if (userId != null)
+                        {
+                            // Add userId to ClaimsIdentity or HttpContext.User
+                            var claimsIdentity = (ClaimsIdentity)context.Principal.Identity;
+                            claimsIdentity.AddClaim(new Claim("UserId", userId));
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+
             });
+
+
             builder.Services.AddSwaggerGen(options =>
             {
                 options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme

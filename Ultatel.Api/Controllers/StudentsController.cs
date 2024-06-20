@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using System.Security.Claims;
 using Ultatel.Core.Dtos;
 using Ultatel.Core.Entities;
 using Ultatel.Services.Services;
@@ -26,10 +28,10 @@ namespace Ultatel.Api.Controllers
         }
 
         [HttpGet]
-     
-        public async Task<ActionResult<IEnumerable<StudentDto>>> GetStudents()
+
+        public async Task<ActionResult<IEnumerable<StudentDto>>> GetAllStudents()
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirst("UserId")?.Value;
             var students = await _studentService.GetAllAsync();
             var userStudents = students.Where(s => s.AddedByUserId == userId);
             var studentDtos = _mapper.Map<IEnumerable<StudentDto>>(userStudents);
@@ -37,7 +39,7 @@ namespace Ultatel.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<StudentDto>> GetStudent(int id)
+        public async Task<ActionResult<StudentDto>> GetStudentById(int id)
         {
             var student = await _studentService.GetByIdAsync(id);
             if (student == null || student.AddedByUserId != _userManager.GetUserId(User))
@@ -49,20 +51,19 @@ namespace Ultatel.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<StudentDto>> PostStudent(StudentDto studentDto)
+        public async Task<ActionResult<StudentDto>> AddStudent(StudentCreateDto studentDto)
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirst("UserId")?.Value;
             var student = _mapper.Map<Student>(studentDto);
             student.AddedByUserId = userId;
             student.CreatedAt = DateTime.UtcNow;
             student.UpdatedAt = DateTime.UtcNow;
-
             await _studentService.AddAsync(student);
-            return CreatedAtAction(nameof(GetStudent), new { id = student.Id }, studentDto);
+            return CreatedAtAction(nameof(GetStudentById), new { id = student.Id }, studentDto);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutStudent(int id, StudentDto studentDto)
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> EditStudent(int id, StudentDto studentDto)
         {
             var student = await _studentService.GetByIdAsync(id);
             if (student == null || student.AddedByUserId != _userManager.GetUserId(User))
@@ -90,12 +91,24 @@ namespace Ultatel.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("search")]
-        public async Task<ActionResult<IEnumerable<StudentDto>>> SearchStudents([FromBody] StudentSearchDto searchDto)
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<StudentDto>>> SearchStudents([FromQuery] StudentSearchDto searchDto)
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirst("UserId")?.Value;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
             var students = await _studentService.SearchAsync(searchDto, userId);
+
+            if (students == null || !students.Any())
+            {
+                return NotFound();
+            }
+
             var studentDtos = _mapper.Map<IEnumerable<StudentDto>>(students);
+
             return Ok(studentDtos);
         }
     }
