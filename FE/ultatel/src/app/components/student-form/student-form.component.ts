@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { StudentService } from '../../services/student.service';
-import { Student } from '../../models/student.model';
+import { StudentService } from '../../Services/student.service';
+import { Student } from '../../Models/student';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -10,8 +10,8 @@ import Swal from 'sweetalert2';
     templateUrl: './student-form.component.html',
 })
 export class StudentFormComponent implements OnInit {
-    studentForm: FormGroup;
-    studentId: number;
+    studentForm!: FormGroup;
+    studentId!: number;
     isEditMode: boolean = false;
 
     constructor(
@@ -22,7 +22,7 @@ export class StudentFormComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.studentId = +this.route.snapshot.paramMap.get('id');
+        this.studentId = this.route.snapshot.paramMap.get('id')?? 0 ;
         this.isEditMode = !!this.studentId;
 
         this.studentForm = this.fb.group({
