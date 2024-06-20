@@ -1,1 +1,32 @@
-<p>register works!</p>
+<div class="register-container">
+    <div class="register-form">
+      <div class="logoContainer">
+        <img src="assets/logo.png" alt="ULTATEL Logo" class="logo" />
+      </div>
+      <h2>Register</h2>
+     
+        <div class="form-group">
+<form [formGroup]="registerForm" (ngSubmit)="register()">
+    <div>
+      <label for="fullName">Full Name:</label>
+      <input id="fullName" formControlName="fullName" type="text">
+    </div>
+    <div>
+      <label for="email">Email:</label>
+      <input id="email" formControlName="email" type="email">
+    </div>
+    <div>
+      <label for="password">Password:</label>
+      <input id="password" formControlName="password" type="password">
+    </div>
+    <div>
+      <label for="confirmPassword">Confirm Password:</label>
+      <input id="confirmPassword" formControlName="confirmPassword" type="password">
+    </div>
+    <button type="submit">Register</button>
+  </form>
+        </div>
+</div>
+</div>
+ 
+  
