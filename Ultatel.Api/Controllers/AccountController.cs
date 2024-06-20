@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using Ultatel.Core.Dtos;
 using Ultatel.Core.Entities;
+using Ultatel.Core.Exceptions;
 using Ultatel.Core.Interfaces;
 
 namespace Ultatel.Api.Controllers
@@ -23,7 +25,7 @@ namespace Ultatel.Api.Controllers
         private readonly IMapper _mapper;
         private readonly IAuthService _authServic;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration,IMapper mapper, IAuthService authServic)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, IMapper mapper, IAuthService authServic)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -35,20 +37,10 @@ namespace Ultatel.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            if (model.Password != model.ConfirmPassword)
-            {
-                ModelState.AddModelError("ConfirmPassword", "The password and confirmation password do not match.");
-                return BadRequest(ModelState);
-            }
-
             var userExists = await _userManager.FindByEmailAsync(model.Email);
             if (userExists != null)
             {
-                return Conflict(new { Status = "Error", Message = "User already exists!" });
+                throw new BadRequestException("User already exists!");
             }
 
             var user = _mapper.Map<ApplicationUser>(model);
@@ -56,8 +48,8 @@ namespace Ultatel.Api.Controllers
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
             {
-                var errors = result.Errors;
-                return BadRequest(new { Status = "Error", Errors = errors });
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                throw new ValidationException(errors);
             }
 
             return Ok(new { Status = "Success", Message = "User created successfully!" });
@@ -69,21 +61,18 @@ namespace Ultatel.Api.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                return NotFound(new { Status = "Error", Message = "User not found!" });
+                throw new NotFoundException("User not found!");
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
             if (!result.Succeeded)
             {
-                return Unauthorized(new { Status = "Error", Message = "Invalid login attempt." });
+                throw new NotAuthorizedException("Invalid login attempt.");
             }
 
             var token = await _authServic.CreatTokenAsync(user, _userManager);
             return Ok(token);
         }
-
-
-        
-        
     }
+
 }

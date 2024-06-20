@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using Ultatel.Core.Dtos;
 using Ultatel.Core.Entities;
+using Ultatel.Core.Exceptions;
 using Ultatel.Services.Services;
 
 namespace Ultatel.Api.Controllers
@@ -14,6 +15,7 @@ namespace Ultatel.Api.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
+    
     public class StudentsController : ControllerBase
     {
         private readonly IStudentService _studentService;
@@ -28,10 +30,14 @@ namespace Ultatel.Api.Controllers
         }
 
         [HttpGet]
-
         public async Task<ActionResult<IEnumerable<StudentDto>>> GetAllStudents()
         {
             var userId = User.FindFirst("UserId")?.Value;
+            if (userId == null)
+            {
+                throw new NotAuthorizedException("Unauthorized access.");
+            }
+
             var students = await _studentService.GetAllAsync();
             var userStudents = students.Where(s => s.AddedByUserId == userId);
             var studentDtos = _mapper.Map<IEnumerable<StudentDto>>(userStudents);
@@ -44,7 +50,7 @@ namespace Ultatel.Api.Controllers
             var student = await _studentService.GetByIdAsync(id);
             if (student == null || student.AddedByUserId != _userManager.GetUserId(User))
             {
-                return NotFound();
+                throw new NotFoundException("Student not found.");
             }
             var studentDto = _mapper.Map<StudentDto>(student);
             return Ok(studentDto);
@@ -54,6 +60,11 @@ namespace Ultatel.Api.Controllers
         public async Task<ActionResult<StudentDto>> AddStudent(StudentCreateDto studentDto)
         {
             var userId = User.FindFirst("UserId")?.Value;
+            if (userId == null)
+            {
+                throw new NotAuthorizedException("Unauthorized access.");
+            }
+
             var student = _mapper.Map<Student>(studentDto);
             student.AddedByUserId = userId;
             student.CreatedAt = DateTime.UtcNow;
@@ -68,12 +79,11 @@ namespace Ultatel.Api.Controllers
             var student = await _studentService.GetByIdAsync(id);
             if (student == null || student.AddedByUserId != _userManager.GetUserId(User))
             {
-                return NotFound();
+                throw new NotFoundException("Student not found.");
             }
 
             _mapper.Map(studentDto, student);
             student.UpdatedAt = DateTime.UtcNow;
-
             await _studentService.UpdateAsync(student);
             return NoContent();
         }
@@ -84,7 +94,7 @@ namespace Ultatel.Api.Controllers
             var student = await _studentService.GetByIdAsync(id);
             if (student == null || student.AddedByUserId != _userManager.GetUserId(User))
             {
-                return NotFound();
+                throw new NotFoundException("Student not found.");
             }
 
             await _studentService.DeleteAsync(id);
@@ -97,19 +107,19 @@ namespace Ultatel.Api.Controllers
             var userId = User.FindFirst("UserId")?.Value;
             if (userId == null)
             {
-                return Unauthorized();
+                throw new NotAuthorizedException("Unauthorized access.");
             }
 
             var students = await _studentService.SearchAsync(searchDto, userId);
-
             if (students == null || !students.Any())
             {
-                return NotFound();
+                throw new NotFoundException("No students found.");
             }
 
             var studentDtos = _mapper.Map<IEnumerable<StudentDto>>(students);
-
             return Ok(studentDtos);
         }
     }
+
 }
+
