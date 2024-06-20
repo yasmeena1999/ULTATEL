@@ -35,19 +35,23 @@ namespace Ultatel.Api.Middlewares
             {
                 case ValidationException validationException:
                     statusCode = HttpStatusCode.BadRequest;
-                    result = JsonSerializer.Serialize(validationException.ValdationErrors);
+                    result = JsonSerializer.Serialize(new { errors = validationException.ValidationErrors });
                     break;
-                case BadRequestException:
+                case BadRequestException badRequestException:
                     statusCode = HttpStatusCode.BadRequest;
+                    result = JsonSerializer.Serialize(new { error = badRequestException.Message });
                     break;
-                case NotFoundException:
+                case NotFoundException notFoundException:
                     statusCode = HttpStatusCode.NotFound;
+                    result = JsonSerializer.Serialize(new { error = notFoundException.Message });
                     break;
-                case NotAuthorizedException:
+                case NotAuthorizedException notAuthorizedException:
                     statusCode = HttpStatusCode.Forbidden;
+                    result = JsonSerializer.Serialize(new { error = notAuthorizedException.Message });
                     break;
-                case Exception:
-                    statusCode = HttpStatusCode.BadRequest;
+                default:
+                    statusCode = HttpStatusCode.InternalServerError;
+                    result = JsonSerializer.Serialize(new { error = exception.Message });
                     break;
             }
 

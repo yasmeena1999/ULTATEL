@@ -8,7 +8,10 @@ using FluentValidation.Results;
 
 namespace Ultatel.Core.Exceptions
 {
-    public class ValidationException:Exception
+    using System;
+    using System.Collections.Generic;
+
+    public class ValidationException : Exception
     {
         public List<string> ValidationErrors { get; set; }
 
@@ -17,4 +20,5 @@ namespace Ultatel.Core.Exceptions
             ValidationErrors = new List<string>(errors);
         }
     }
+
 }
