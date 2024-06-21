@@ -1,0 +1,43 @@
+.vh-100 {
+    min-height: 100vh;
+  }
+  
+  .card {
+    max-width: 400px;
+    width: 100%;
+  }
+  
+  .company-logo {
+    max-width: 100px;
+    width: 100%;
+  }
+  
+  .form-control {
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .btn-block {
+    padding: 10px;
+    font-size: 16px;
+  }
+  
+  .btn-link {
+    padding: 0;
+    font-size: 14px;
+    color: #007bff;
+  }
+  
+  .btn-link:hover {
+    text-decoration: underline;
+  }
+  
+  .card-title {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .text-danger {
+    font-size: 12px;
+  }
+  

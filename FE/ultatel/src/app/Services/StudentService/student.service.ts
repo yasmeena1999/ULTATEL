@@ -8,34 +8,32 @@ import { Student } from '../../Models/student';
 })
 export class StudentService {
 
-  private apiUrl = 'https://yourapi.com/api/students';
-
-  constructor(private http: HttpClient) { }
-
-  getStudents(pageIndex: number, pageSize: number): Observable<any> {
-      let params = new HttpParams();
-      params = params.append('pageIndex', pageIndex.toString());
-      params = params.append('pageSize', pageSize.toString());
-      return this.http.get(this.apiUrl, { params });
-  }
-
-  getStudent(id: number): Observable<Student> {
-      return this.http.get<Student>(`${this.apiUrl}/${id}`);
-  }
-
-  addStudent(student: Student): Observable<Student> {
-      return this.http.post<Student>(this.apiUrl, student);
-  }
-
-  updateStudent(id: number, student: Student): Observable<void> {
-      return this.http.put<void>(`${this.apiUrl}/${id}`, student);
-  }
-
-  deleteStudent(id: number): Observable<void> {
-      return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
-
-  searchStudents(query: any): Observable<Student[]> {
-      return this.http.post<Student[]>(`${this.apiUrl}/search`, query);
-  }
-}
+    
+        private apiUrl = '/api/students';
+      
+        constructor(private http: HttpClient) { }
+      
+        getAllStudents(): Observable<Student[]> {
+          return this.http.get<Student[]>(this.apiUrl);
+        }
+      
+        getStudentById(id: number): Observable<Student> {
+          return this.http.get<Student>(`${this.apiUrl}/${id}`);
+        }
+      
+        addStudent(student: Student): Observable<Student> {
+          return this.http.post<Student>(this.apiUrl, student);
+        }
+      
+        editStudent(id: number, student: Student): Observable<any> {
+          return this.http.patch(`${this.apiUrl}/${id}`, student);
+        }
+      
+        deleteStudent(id: number): Observable<any> {
+          return this.http.delete(`${this.apiUrl}/${id}`);
+        }
+      
+        searchStudents(params: any): Observable<Student[]> {
+          return this.http.get<Student[]>(`${this.apiUrl}/search`, { params });
+        }
+      }
