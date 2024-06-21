@@ -7,13 +7,14 @@ import * as jwtDecode from 'jwt-decode';
 
 import { LoginDto } from '../../Models/LoginDto';
 import { RegisterDto } from '../../Models/RegisterDto';
+import Swal from 'sweetalert2';
 
 @Injectable({
   providedIn: 'root'
 })
 export default class AccountService {
   
-  private apiUrl = 'https://4f39-102-44-174-195.ngrok-free.app/api/account'; // Replace with your API URL
+  private apiUrl = 'https://bfcc-102-40-186-20.ngrok-free.app/api/account'; // Replace with your API URL
   
   constructor(
     private http: HttpClient,
@@ -50,10 +51,21 @@ export default class AccountService {
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-   
-    this.router.navigate(['/login']);
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to Logout`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Logout!',
+      cancelButtonText: 'Cancel',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.removeItem('token');
+        this.router.navigate(['/login']);
+      }
+    });
   }
+  
 
   getToken(): string | null {
     const token = localStorage.getItem('token');
@@ -63,7 +75,7 @@ export default class AccountService {
   
 
   
-  getNameIdFromToken(): string | null {
+  getuserIdFromToken(): string | null {
     const token = this.getToken();
     if (token) {
       try {
@@ -77,4 +89,10 @@ export default class AccountService {
     }
     return "no token";
   }
+  isAuthenticated(): boolean {
+    const token = this.getToken();
+    
+    return !!token;
+  }
+
 }

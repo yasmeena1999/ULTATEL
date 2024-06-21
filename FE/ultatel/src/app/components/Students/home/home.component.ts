@@ -1,109 +1,108 @@
-// import { Component, OnInit } from '@angular/core';
-// import AccountService from '../../../Services/AccountService/account.service';
-// import { Student } from '../../../Models/student';
-// import { FormBuilder, FormGroup } from '@angular/forms';
-// import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
-// import { StudentService } from '../../../Services/StudentService/student.service';
+import { Component, OnInit } from '@angular/core';
+import AccountService from '../../../Services/AccountService/account.service';
+import { Student } from '../../../Models/student';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
-// @Component({
-//   selector: 'app-home',
-//   standalone: true,
-//   imports: [],
-//   templateUrl: './home.component.html',
-//   styleUrl: './home.component.css'
-// })
-// export class HomeComponent implements OnInit {
-//   students: Student[] = [];
-//   totalItems: number = 0;
-//   pageSize: number = 10;
-//   pageIndex: number = 1;
-//   searchForm: FormGroup;
+import { StudentService } from '../../../Services/StudentService/student.service';
+import Swal from 'sweetalert2';
+import { StudentModalComponent } from '../student-modal/student-modal.component';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-//   constructor(
-//     private studentService: StudentService,
-//     private fb: FormBuilder,
-//     private modalService: NgbModal
-//   ) {
-//     this.searchForm = this.fb.group({
-//       name: [''],
-//       ageFrom: [''],
-//       ageTo: [''],
-//       country: [''],
-//       gender: ['']
-//     });
-//   }
+@Component({
+  selector: 'app-home',
+  standalone: true,
+  imports: [ReactiveFormsModule,CommonModule,RouterOutlet],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css'
+})
+export class HomeComponent  {
 
-//   ngOnInit(): void {
-//     this.loadStudents();
-//   }
+  studentForm!: FormGroup;
+  allStudents: Student[] = []; // Assuming you have a Student interface or class defined
+  displayedStudents: Student[] = []; 
+ 
 
-//   loadStudents(): void {
-//     const filters = this.searchForm.value;
-//     this.studentService.getStudents(this.pageIndex, this.pageSize, filters).subscribe(response => {
-//       this.students = response.data;
-//       this.totalItems = response.count;
-//     });
-//   }
+  constructor(private fb: FormBuilder,private accountService: AccountService,private studentService:StudentService,private modelservice:NgbModal)  {
 
-//   onSearch(): void {
-//     this.pageIndex = 1; // Reset to first page on new search
-//     this.loadStudents();
-//   }
+  }
 
-//   onReset(): void {
-//     this.searchForm.reset();
-//     this.pageIndex = 1;
-//     this.loadStudents();
-//   }
+  ngOnInit(): void {
+    this.studentForm = this.fb.group({
+      selectedName: [''],
+      selectedCountry: [''],
+      selectedMinAge: [null, Validators.min(0)],
+      selectedMaxAge: [null, Validators.min(0)],
+      selectedGender: ['']
+    });
+    this.getAllStudents();
+  }
 
-//   onPageChange(page: number): void {
-//     this.pageIndex = page;
-//     this.loadStudents();
-//   }
+  searchStudents(): void {
+    if (this.studentForm.valid) {
+      const searchData = this.studentForm.value;
+      // Implement search logic using this.studentService
+      console.log(searchData);
+    }
+  }
 
-//   addStudent(): void {
-//     const modalRef = this.modalService.open(StudentModalComponent);
-//     modalRef.componentInstance.student = null;
+  logout(): void {
+    this.accountService.logout();
+  }
 
-//     modalRef.result.then((result) => {
-//       if (result) {
-//         this.studentService.addStudent(result).subscribe(() => {
-//           this.loadStudents();
-//         });
-//       }
-//     }, (reason) => {
-//       // Handle dismiss reason if needed
-//     });
-//   }
+  openAddEditModal(isNew: boolean): void {
+    const modalRef = this.modelservice.open(StudentModalComponent);
+    modalRef.componentInstance.isNew = isNew; // Example of passing data to modal
+    modalRef.result.then((result) => {
+      if (result === true) {
+        console.log('Operation successful');
+        this.getAllStudents(); // Refresh list after modal operation
+      }
+    }).catch((error) => {
+      console.error('Modal error:', error);
+    });
+  }
 
-//   editStudent(student: Student): void {
-//     const modalRef = this.modalService.open(StudentModalComponent);
-//     modalRef.componentInstance.student = student;
+  resetForm(): void {
+    this.studentForm.reset();
+    this.displayedStudents = [...this.allStudents]; // Reset displayed list
+  }
 
-//     modalRef.result.then((result) => {
-//       if (result) {
-//         this.studentService.updateStudent(result).subscribe(() => {
-//           this.loadStudents();
-//         });
-//       }
-//     }, (reason) => {
-//       // Handle dismiss reason if needed
-//     });
-//   }
+  getAllStudents(): void {
+    this.studentService.getAllStudents().subscribe({
+      next: (students: Student[]) => {
+        this.allStudents = students;
+        this.displayedStudents = [...this.allStudents];
+      },
+      error: (error: any) => {
+        console.error('Error fetching students:', error);
+      }
+    });
+  }
 
-//   deleteStudent(id: number): void {
-//     const modalRef = this.modalService.open(DeleteConfirmationModalComponent);
-//     modalRef.componentInstance.id = id;
-
-//     modalRef.result.then((result) => {
-//       if (result === 'confirm') {
-//         this.studentService.deleteStudent(id).subscribe(() => {
-//           this.loadStudents();
-//         });
-//       }
-//     }, (reason) => {
-//       // Handle dismiss reason if needed
-//     });
-//   }
-// }
-
+  delete(studentId: number): void {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this action!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Delete'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.studentService.deleteStudent(studentId).subscribe({
+          next: () => {
+            Swal.fire('Deleted!', 'Student has been deleted.', 'success');
+            this.getAllStudents(); // Refresh list after delete
+          },
+          error: (err: any) => {
+            console.error('Delete error:', err);
+            Swal.fire('Error', 'Failed to delete student.', 'error');
+          }
+        });
+      }
+    });
+  }
+}

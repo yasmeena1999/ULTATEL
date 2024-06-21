@@ -1,0 +1,36 @@
+.container-fluid {
+    padding: 20px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+  }
+
+  .image img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .filter {
+    border: 1px solid #ced4da;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+
+  .filter-header {
+    margin-bottom: 20px;
+  }
+
+  .age-input {
+    align-items: center;
+  }
+
+  @media (max-width: 576px) {
+    .btn-danger {
+      background-color: transparent;
+      border: none;
+      color: #dc3545;
+      font-weight: 500;
+    }
+}

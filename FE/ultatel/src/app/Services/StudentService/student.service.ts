@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Student } from '../../Models/student';
+import { StudentSearchDto } from '../../Models/StudentSearchDto';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,7 @@ import { Student } from '../../Models/student';
 export class StudentService {
 
     
-        private apiUrl = '/api/students';
+        private apiUrl = 'https://bfcc-102-40-186-20.ngrok-free.app/api/students';
       
         constructor(private http: HttpClient) { }
       
@@ -29,11 +30,11 @@ export class StudentService {
           return this.http.patch(`${this.apiUrl}/${id}`, student);
         }
       
-        deleteStudent(id: number): Observable<any> {
-          return this.http.delete(`${this.apiUrl}/${id}`);
+        deleteStudent(studentid: number): Observable<any> {
+          return this.http.delete(`${this.apiUrl}/${studentid}`);
         }
       
-        searchStudents(params: any): Observable<Student[]> {
-          return this.http.get<Student[]>(`${this.apiUrl}/search`, { params });
+        searchStudents(searchDto: StudentSearchDto): Observable<Student[]> {
+          return this.http.post<Student[]>(`${this.apiUrl}/search`, searchDto);
         }
       }
