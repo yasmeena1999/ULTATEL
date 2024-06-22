@@ -32,6 +32,14 @@ namespace Ultatel.Api
                             .AddJwtAuthentication(builder.Configuration)
                             .AddSwagger()
                             .AddApplicationServices();
+            builder.Services.AddCors(
+               options => options.AddPolicy(
+                   "angularApp",
+                   policy => policy.WithOrigins(builder.Configuration["AngularUrl"] ?? "http://localhost:4200/")
+                .AllowAnyMethod()
+                .SetIsOriginAllowed(policy => true)
+                .AllowAnyHeader()
+                .AllowCredentials()));
 
             builder.Services.AddControllers();
 
