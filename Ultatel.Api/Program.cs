@@ -55,8 +55,9 @@ namespace Ultatel.Api
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseCors("angularApp");
             app.MapControllers();
+            
 
             app.Run();
         }
