@@ -53,11 +53,11 @@ export class HomeComponent  {
 
   openAddEditModal(isNew: boolean): void {
     const modalRef = this.modelservice.open(StudentModalComponent);
-    modalRef.componentInstance.isNew = isNew; // Example of passing data to modal
+    modalRef.componentInstance.isNew = isNew; 
     modalRef.result.then((result) => {
       if (result === true) {
         console.log('Operation successful');
-        this.getAllStudents(); // Refresh list after modal operation
+        this.getAllStudents(); 
       }
     }).catch((error) => {
       console.error('Modal error:', error);
@@ -66,7 +66,7 @@ export class HomeComponent  {
 
   resetForm(): void {
     this.studentForm.reset();
-    this.displayedStudents = [...this.allStudents]; // Reset displayed list
+    this.displayedStudents = [...this.allStudents]; 
   }
 
   getAllStudents(): void {

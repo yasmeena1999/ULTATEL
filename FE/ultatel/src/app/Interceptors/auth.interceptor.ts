@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import AccountService from '../Services/AccountService/account.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-   // Create an instance of AuthService to access the token
+   
   const authToken = localStorage.getItem('token');
   if (authToken) {
     const authReq = req.clone({
