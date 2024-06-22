@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
 })
 export default class AccountService {
   
-  private apiUrl = 'https://bfcc-102-40-186-20.ngrok-free.app/api/account'; // Replace with your API URL
+  private apiUrl = 'http://localhost:5183/api/account'; // Replace with your API URL
   
   constructor(
     private http: HttpClient,

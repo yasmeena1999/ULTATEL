@@ -10,7 +10,7 @@ import { StudentSearchDto } from '../../Models/StudentSearchDto';
 export class StudentService {
 
     
-        private apiUrl = 'https://bfcc-102-40-186-20.ngrok-free.app/api/students';
+        private apiUrl = 'http://localhost:5183/api/students';
       
         constructor(private http: HttpClient) { }
       
